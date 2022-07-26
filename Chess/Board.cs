@@ -128,16 +128,16 @@
             PrintClass.Print("You cann`t move to this coordinate");
             return false;
         }
-        private bool _beat(Cell cell, byte Coordinate,Figure beatenFigure, ref bool isOver,Cell DoubleCell = null)
+        private bool _beat(Cell cell, byte NewCoordinate,Figure beatenFigure, ref bool isOver,Cell DoubleCell = null)
         {
             var figure = cell.GetFigure();
-            Cell newCell = _board[Coordinate % 10 - 1, Coordinate / 10 - 1];
-            if (!MovesChecker.CheckHit(this, figure, Coordinate))
+            Cell newCell = _board[NewCoordinate % 10 - 1, NewCoordinate / 10 - 1];
+            if (!MovesChecker.CheckHit(this, figure, NewCoordinate))
             {
                 PrintClass.Print("You cann`t beat figure placed this coordinate");
                 return false;
             }
-            figure.Move(Coordinate);
+            figure.Move(NewCoordinate);
             newCell.SetFigure(figure);
             cell.SetFigure(null);
             _figures.Remove(beatenFigure);
@@ -179,10 +179,7 @@
             {
                 Cell? doubleCell = _board[newX - 1 + dir, newY -1];
                 beatenFigure = doubleCell.GetFigure();
-                if(beatenFigure == null) return _move(cell, newCell);
-                if (beatenFigure.GetName() != "Pawn") return _move(cell, newCell);
-                if(beatenFigure.GetMovingStory().Count != 2) return _move(cell, newCell);
-                if(beatenFigure != _lastFigure) return _move(cell, newCell);
+                if (!_checkDoubleMove(beatenFigure)) return _move(cell, newCell);
                 return _beat(cell, NewCoordinate,beatenFigure,ref isOver,doubleCell);
             }
             if (colourTurn != beatenFigure.GetColour())
@@ -192,22 +189,31 @@
             PrintClass.Print("You cann`t beat figure which has the same colour");
             return false;
         }
-        public void PrintBoard()
+        private bool _checkDoubleMove(Figure beatenFigure)
+        {
+            if (beatenFigure == null) return false;
+            if (beatenFigure.GetName() != "Pawn") return false;
+            if (beatenFigure.GetMovingStory().Count != 2) return false;
+            if (beatenFigure != _lastFigure) return false;
+            return true;
+        }
+        public void PrintBoard(bool Turn = true)
         {
             if (_board == null) return;
-            for (int i = 7; i >= 0; i--, PrintClass.Print('\0'))
+            int dir = Turn ? 1 : -1;
+            for (int i = (int)(3.5+3.5*dir); i !=3.5-4.5*dir; i-=dir, PrintClass.Print('\0'))
             {
                 Console.ResetColor();
-                PrintClass.Print(i + 1, end: ' ');
-                for (int j = 0; j < 8; j++, Console.ResetColor())
+                PrintClass.Print(i+1, end: ' ');
+                for (int j = (int)(3.5-3.5*dir); j != 3.5+4.5*dir; j+=dir, Console.ResetColor())
                 {
                     _board[i, j].PrintCell();
                 }
             }
             PrintClass.Print("  ", end: '\0');
-            for (int i = 1; i < 9; i++)
+            for (int i = (int)(4.5-3.5*dir); i != 4.5+4.5*dir; i+=dir)
             {
-                PrintClass.Print(" " + i + " ", end: '\0');
+                PrintClass.Print(" " + (char)(64+i) + " ", end: '\0');
             }
             PrintClass.Print('\0');
         }
