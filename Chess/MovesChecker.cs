@@ -145,14 +145,13 @@
         }
         private static bool _check(Board board,int coordinate,byte NewCoordinate,int plus)
         {
-            do
+            while (coordinate != NewCoordinate - plus)
             {
                 coordinate += plus;
                 int x_coor = coordinate % 10, y_coor = coordinate / 10;
                 Cell cell = board.GetCell(x_coor - 1, y_coor - 1);
                 if (!cell.IsEmpty()) return false;
             }
-            while (coordinate != NewCoordinate - plus);
             return true;
         }
     }

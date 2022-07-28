@@ -120,6 +120,7 @@
             if (MovesChecker.CheckMove(this, figure, newCell.GetCoordinate()))
             {
                 figure.Move(newCell.GetCoordinate());
+                figure = figure.GetName() == "Pawn"? _turnPawnInto(figure,newCell):figure;
                 newCell.SetFigure(figure);
                 cell.SetFigure(null);
                 _lastFigure = figure;
@@ -130,14 +131,15 @@
         }
         private bool _beat(Cell cell, byte NewCoordinate,Figure beatenFigure, ref bool isOver,Cell DoubleCell = null)
         {
-            var figure = cell.GetFigure();
-            Cell newCell = _board[NewCoordinate % 10 - 1, NewCoordinate / 10 - 1];
+            Figure? figure = cell.GetFigure();
+            Cell? newCell = _board[NewCoordinate % 10 - 1, NewCoordinate / 10 - 1];
             if (!MovesChecker.CheckHit(this, figure, NewCoordinate))
             {
                 PrintClass.Print("You cann`t beat figure placed this coordinate");
                 return false;
             }
             figure.Move(NewCoordinate);
+            figure = figure.GetName() == "Pawn" ? _turnPawnInto(figure, newCell) : figure;
             newCell.SetFigure(figure);
             cell.SetFigure(null);
             _figures.Remove(beatenFigure);
@@ -186,6 +188,10 @@
             {
                 return _beat(cell, NewCoordinate,beatenFigure, ref isOver);
             }
+            if (_checkCastling(figure, beatenFigure))
+            {
+                return _makeCastling(figure, beatenFigure);
+            }
             PrintClass.Print("You cann`t beat figure which has the same colour");
             return false;
         }
@@ -196,6 +202,61 @@
             if (beatenFigure.GetMovingStory().Count != 2) return false;
             if (beatenFigure != _lastFigure) return false;
             return true;
+        }
+        private bool _checkCastling(Figure figure,Figure beatenFigure)
+        {
+            if (figure.GetName() != "King" || beatenFigure.GetName() != "Rook") return false;
+            if (figure.GetMovingStory().Count + beatenFigure.GetMovingStory().Count != 2) return false;
+            if (!MovesChecker.CheckMove(this, beatenFigure, figure.GetCoordinate())) return false;
+            return true;
+        }
+        private bool _makeCastling(Figure king,Figure rook)
+        {
+            int kingCoordinate = king.GetCoordinate(),rookCoordinate = rook.GetCoordinate();
+            Cell rookCell = _board[rookCoordinate % 10 - 1, rookCoordinate / 10 - 1], kingCell = _board[kingCoordinate % 10 - 1, kingCoordinate / 10 - 1];
+            int diff = kingCoordinate - rookCoordinate;
+            int dir = diff>0? 1 : -1;
+            int newRookCoor = kingCoordinate - dir*10,newKingCoor = newRookCoor-10*dir;
+            Cell newRookCell = _board[newRookCoor % 10 - 1, newRookCoor / 10 - 1],newKingCell = _board[newKingCoor % 10 - 1, newKingCoor / 10 - 1];
+            newRookCell.SetFigure(rook);
+            newKingCell.SetFigure(king);
+            rookCell.SetFigure(null);
+            kingCell.SetFigure(null);
+            king.Move((byte)newKingCoor);
+            rook.Move((byte)newRookCoor);
+            return true;
+        }
+        private Figure _turnPawnInto(Figure figure,Cell newCell) {
+            byte newCoor = newCell.GetCoordinate();
+            bool figureColour = figure.GetColour();
+            int lastHoriz = figureColour ? 8 : 1;
+            if(newCoor%10 == lastHoriz)
+            {
+                while (true)
+                {
+                    PrintClass.Print("Enter number if you want turn pawn into: 1-horse,2-elephant,3-rook,4-queen");
+                    string number = Console.ReadLine();
+                    switch (number)
+                    {
+                        case "1":
+                            return new Horse(newCoor, figureColour);
+                            break;
+                        case "2":
+                            return new Elephant(newCoor, figureColour);
+                            break;
+                        case "3":
+                            return new Rook(newCoor, figureColour);
+                            break;
+                        case "4":
+                            return new Queen(newCoor, figureColour);
+                            break;
+                        default:
+                            PrintClass.Print("Incorrect input,try again");
+                            break;
+                    }
+                }
+            }
+            return figure;
         }
         public void PrintBoard(bool Turn = true)
         {
