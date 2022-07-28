@@ -234,8 +234,7 @@
             {
                 while (true)
                 {
-                    PrintClass.Print("Enter number if you want turn pawn into: 1-horse,2-elephant,3-rook,4-queen");
-                    string number = Console.ReadLine();
+                    string number = InputClass.Input<string>("Enter number if you want turn pawn into: 1-horse,2-elephant,3-rook,4-queen: ");
                     switch (number)
                     {
                         case "1":
