@@ -3,6 +3,7 @@
     class Pawn : Figure
     {
         public Pawn(byte Coordinate, bool colour) : base(Coordinate, "Pawn", colour) { }
+
         protected override void setCTM()
         {
             coordinatesToMove.Clear();

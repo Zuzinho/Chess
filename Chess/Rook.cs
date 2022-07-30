@@ -3,6 +3,7 @@
     class Rook : Figure
     {
         public Rook(byte Coordinate, bool colour) : base(Coordinate, "Rook", colour) { }
+
         protected override void setCTM()
         {
             coordinatesToMove.Clear();

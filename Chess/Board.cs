@@ -5,6 +5,7 @@
         private Cell?[,] _board;
         private List<Figure> _figures;
         private Figure? _lastFigure;
+
         public Board()
         {
             _board = new Cell?[8, 8];
@@ -25,6 +26,78 @@
             PrintClass.Print("Place kings...", pause: 500);
             _placeKings();
         }
+        public bool Move(byte Coordinate, byte NewCoordinate, bool colourTurn, ref bool isOver)
+        {
+            int y_coor = Coordinate / 10, x_coor = Coordinate % 10;
+            Cell? cell = _board[x_coor - 1, y_coor - 1];
+            Figure? figure = cell.GetFigure();
+            if (figure == null)
+            {
+                PrintClass.Print("Here is no any figure");
+                return false;
+            }
+            if (figure.GetColour() != colourTurn)
+            {
+                PrintClass.Print("Turn of figures with another colour");
+                return false;
+            }
+            int newY = NewCoordinate / 10, newX = NewCoordinate % 10;
+            Cell? newCell = _board[newX - 1, newY - 1];
+            Figure? beatenFigure = newCell.GetFigure();
+            int dir = colourTurn ? -1 : 1;
+            if (beatenFigure == null)
+            {
+                Cell? doubleCell = _board[newX - 1 + dir, newY -1];
+                beatenFigure = doubleCell.GetFigure();
+                if (!_checkDoubleMove(beatenFigure)) return _move(cell, newCell);
+                return _beat(cell, NewCoordinate,beatenFigure,ref isOver,doubleCell);
+            }
+            if (colourTurn != beatenFigure.GetColour())
+            {
+                return _beat(cell, NewCoordinate,beatenFigure, ref isOver);
+            }
+            if (_checkCastling(figure, beatenFigure))
+            {
+                return _makeCastling(figure, beatenFigure);
+            }
+            PrintClass.Print("You cann`t beat figure which has the same colour");
+            return false;
+        }
+        public void PrintBoard(bool Turn = true,int choosenCoordinate = 0)
+        {
+            if (_board == null) return;
+            List<byte> MovesList;
+            if (choosenCoordinate == 0) MovesList = new List<byte> { };
+            else MovesList = MovesListsGetter.GetMovesList(this, GetCell(choosenCoordinate).GetFigure());
+            int dir = Turn ? 1 : -1;
+            for (int i = (int)(3.5+3.5*dir); i !=3.5-4.5*dir; i-=dir, PrintClass.Print('\0'))
+            {
+                Console.ResetColor();
+                PrintClass.Print(i+1, end: ' ');
+                for (int j = (int)(3.5-3.5*dir); j != 3.5+4.5*dir; j+=dir, Console.ResetColor())
+                {
+                    int thisCoordinate = j * 10 + i + 11;
+                    if (MovesList.Contains((byte)thisCoordinate)) 
+                    {
+                        _board[i, j].PrintCell(1);
+                        continue;
+                    }
+                    _board[i, j].PrintCell();
+                }
+            }
+            PrintClass.Print("  ", end: '\0');
+            for (int i = (int)(4.5-3.5*dir); i != 4.5+4.5*dir; i+=dir)
+            {
+                PrintClass.Print(" " + (char)(64+i) + " ", end: '\0');
+            }
+            PrintClass.Print('\0');
+        }
+        public Cell GetCell(int coordinate)
+        {
+            int x = coordinate % 10 - 1, y = coordinate / 10 - 1;
+            return _board[x, y];
+        }
+
         private void _initBoard()
         {
             for (int i = 0; i < 8; i++)
@@ -110,10 +183,7 @@
             _board[0, 4].SetFigure(kingWhite);
             _board[7, 4].SetFigure(kingBlack);
         }
-        private static bool _checkCoordinate(byte Coordinate, int y)
-        {
-            return Coordinate < 11 || Coordinate > 88 || y == 0 || y == 9;
-        }
+
         private bool _move(Cell cell, Cell newCell)
         {
             var figure = cell.GetFigure();
@@ -148,53 +218,7 @@
             _lastFigure = figure;
             return true;
         }
-        public bool Move(byte Coordinate, byte NewCoordinate, bool colourTurn, ref bool isOver)
-        {
-            int y_coor = Coordinate / 10, x_coor = Coordinate % 10;
-            if (_checkCoordinate(Coordinate, y_coor))
-            {
-                PrintClass.Print("No such coordinate as the first one");
-                return false;
-            }
-            Cell? cell = _board[x_coor - 1, y_coor - 1];
-            Figure? figure = cell.GetFigure();
-            if (figure == null)
-            {
-                PrintClass.Print("Here is no any figure");
-                return false;
-            }
-            if (figure.GetColour() != colourTurn)
-            {
-                PrintClass.Print("Turn of figures with another colour");
-                return false;
-            }
-            int newY = NewCoordinate / 10, newX = NewCoordinate % 10;
-            if (_checkCoordinate(NewCoordinate, newY))
-            {
-                PrintClass.Print("No such coordinate as the second one");
-                return false;
-            }
-            Cell? newCell = _board[newX - 1, newY - 1];
-            Figure? beatenFigure = newCell.GetFigure();
-            int dir = colourTurn ? -1 : 1;
-            if (beatenFigure == null)
-            {
-                Cell? doubleCell = _board[newX - 1 + dir, newY -1];
-                beatenFigure = doubleCell.GetFigure();
-                if (!_checkDoubleMove(beatenFigure)) return _move(cell, newCell);
-                return _beat(cell, NewCoordinate,beatenFigure,ref isOver,doubleCell);
-            }
-            if (colourTurn != beatenFigure.GetColour())
-            {
-                return _beat(cell, NewCoordinate,beatenFigure, ref isOver);
-            }
-            if (_checkCastling(figure, beatenFigure))
-            {
-                return _makeCastling(figure, beatenFigure);
-            }
-            PrintClass.Print("You cann`t beat figure which has the same colour");
-            return false;
-        }
+
         private bool _checkDoubleMove(Figure beatenFigure)
         {
             if (beatenFigure == null) return false;
@@ -203,6 +227,7 @@
             if (beatenFigure != _lastFigure) return false;
             return true;
         }
+
         private bool _checkCastling(Figure figure,Figure beatenFigure)
         {
             if (figure.GetName() != "King" || beatenFigure.GetName() != "Rook") return false;
@@ -226,7 +251,8 @@
             rook.Move((byte)newRookCoor);
             return true;
         }
-        private Figure _turnPawnInto(Figure figure,Cell newCell) {
+
+        private static Figure _turnPawnInto(Figure figure,Cell newCell) {
             byte newCoor = newCell.GetCoordinate();
             bool figureColour = figure.GetColour();
             int lastHoriz = figureColour ? 8 : 1;
@@ -239,16 +265,12 @@
                     {
                         case "1":
                             return new Horse(newCoor, figureColour);
-                            break;
                         case "2":
                             return new Elephant(newCoor, figureColour);
-                            break;
                         case "3":
                             return new Rook(newCoor, figureColour);
-                            break;
                         case "4":
                             return new Queen(newCoor, figureColour);
-                            break;
                         default:
                             PrintClass.Print("Incorrect input,try again");
                             break;
@@ -256,30 +278,6 @@
                 }
             }
             return figure;
-        }
-        public void PrintBoard(bool Turn = true)
-        {
-            if (_board == null) return;
-            int dir = Turn ? 1 : -1;
-            for (int i = (int)(3.5+3.5*dir); i !=3.5-4.5*dir; i-=dir, PrintClass.Print('\0'))
-            {
-                Console.ResetColor();
-                PrintClass.Print(i+1, end: ' ');
-                for (int j = (int)(3.5-3.5*dir); j != 3.5+4.5*dir; j+=dir, Console.ResetColor())
-                {
-                    _board[i, j].PrintCell();
-                }
-            }
-            PrintClass.Print("  ", end: '\0');
-            for (int i = (int)(4.5-3.5*dir); i != 4.5+4.5*dir; i+=dir)
-            {
-                PrintClass.Print(" " + (char)(64+i) + " ", end: '\0');
-            }
-            PrintClass.Print('\0');
-        }
-        public Cell GetCell(int x, int y)
-        {
-            return _board[x, y];
         }
     }
 }

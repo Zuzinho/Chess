@@ -24,13 +24,13 @@
             if (name == "King") return _checkHit(figure as King, NewCoordinate);
             return false;
         }
+
         private static bool _checkMove(Board board, Pawn pawn, byte NewCoordinate)
         {
             var CTM = pawn.GetCoordinatesToMove();
             if (!CTM.Contains(NewCoordinate)) return false;
             if (CTM.Count == 1) return true;
-            int x_coor = CTM[0] %10,y_coor = CTM[0] /10;
-            Cell cell = board.GetCell(x_coor-1,y_coor-1);
+            Cell cell = board.GetCell(CTM[0]);
             return cell.IsEmpty();
         }
         private static bool _checkHit(Pawn pawn, byte BeatCoordinate)
@@ -38,7 +38,8 @@
             var CTB = pawn.GetCoordinatesToBeat();
             return CTB.Contains(BeatCoordinate);
         }
-        private static bool _checkMove(Board board,Rook rook,byte NewCoordinate) {
+        private static bool _checkMove(Board board, Rook rook, byte NewCoordinate)
+        {
             var CTM = rook.GetCoordinatesToMove();
             int coordinate = rook.GetCoordinate();
             if (!CTM.Contains(NewCoordinate)) return false;
@@ -51,13 +52,13 @@
             int plus;
             if (diff >= 10) plus = 10;// Right 
             else if (diff > 0) plus = 1;// Up
-            else if (diff<=-10) plus = -10;// Left
+            else if (diff <= -10) plus = -10;// Left
             else plus = -1;// Down
             return _check(board, coordinate, NewCoordinate, plus);
         }
         private static bool _checkHit(Board board, Rook rook, byte NewCoordinate)
         {
-            return _checkMove(board,rook,NewCoordinate);//Rook can beat the same coordinates as coordinates it can move along
+            return _checkMove(board, rook, NewCoordinate);//Rook can beat the same coordinates as coordinates it can move along
         }
         private static bool _checkMove(Horse horse, byte NewCoordinate)
         {
@@ -69,7 +70,7 @@
             var CTB = horse.GetCoordinatesToMove();
             return CTB.Contains(NewCoordinate);
         }
-        private static bool _checkMove(Board board,Elephant elephant,byte NewCoordinate)
+        private static bool _checkMove(Board board, Elephant elephant, byte NewCoordinate)
         {
             var CTM = elephant.GetCoordinatesToMove();
             int coordinate = elephant.GetCoordinate();
@@ -81,7 +82,7 @@
             //16*(61**) - 38*(83**) = -22*(-22**) Down Left
             //* - My coordinates or diff,** - real coordinates or diff
             int plus;
-            if(diff>0)// Right
+            if (diff > 0)// Right
             {
                 if (diff % 11 == 0) plus = 11; // Up Right 
                 else plus = 9;// Down Right
@@ -133,23 +134,23 @@
         {
             return _checkMove(board, queen, NewCoordinate);//Queen can beat the same coordinates as coordinates it can move along
         }
-        private static bool _checkMove(King king,byte NewCoordinate)
+        private static bool _checkMove(King king, byte NewCoordinate)
         {
             var CTM = king.GetCoordinatesToMove();
             return CTM.Contains(NewCoordinate);
         }
+
         private static bool _checkHit(King king, byte NewCoordinate)
         {
             var CTB = king.GetCoordinatesToMove();
             return CTB.Contains(NewCoordinate);
         }
-        private static bool _check(Board board,int coordinate,byte NewCoordinate,int plus)
+        private static bool _check(Board board, int coordinate, byte NewCoordinate, int plus)
         {
             while (coordinate != NewCoordinate - plus)
             {
                 coordinate += plus;
-                int x_coor = coordinate % 10, y_coor = coordinate / 10;
-                Cell cell = board.GetCell(x_coor - 1, y_coor - 1);
+                Cell cell = board.GetCell(coordinate);
                 if (!cell.IsEmpty()) return false;
             }
             return true;

@@ -1,4 +1,5 @@
-﻿namespace Chess { 
+﻿namespace Chess
+{
     class Program
     {
         public static void Main()

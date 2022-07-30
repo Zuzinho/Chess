@@ -3,6 +3,7 @@
     class Horse : Figure
     {
         public Horse(byte Coordinate, bool colour) : base(Coordinate, "Horse", colour) { }
+
         protected override void setCTM() { // Horse can move like Г letter, x+-2 and y+-1, or x+-1 and y+-2
             coordinatesToMove.Clear();
             byte x_coor = (byte)(coordinate / 10), y_coor = (byte)(coordinate % 10);

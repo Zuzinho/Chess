@@ -10,6 +10,7 @@
         protected string name;
         protected List<byte> movingStory;
         protected bool colour;
+
         public Figure(byte Coordinate, string Name, bool Colour)
         {
             coordinate = Coordinate;
@@ -24,17 +25,23 @@
             setCTM();
             setCTB();
         }
+
         public byte GetCoordinate() { return coordinate; }
         public void SetCoordinate(byte Coordinate) { coordinate = Coordinate; }
+
         public string GetName() { return name; }
         public void SetName(string Name) { name = Name; }
+
         public bool GetColour() { return colour; }
+
         public List<byte> GetMovingStory() { return movingStory; }
 
-        protected virtual void setCTM() { }
+        public List<byte> GetCoordinatesToBeat() { return coordinatesToBeat; } 
         protected virtual void setCTB() { }
-        public List<byte> GetCoordinatesToBeat() { return coordinatesToBeat; }
+
         public List<byte> GetCoordinatesToMove() { return coordinatesToMove; }
+        protected virtual void setCTM() { }
+
         public void Move(byte NewCoordinate)
         {
             coordinate = NewCoordinate;

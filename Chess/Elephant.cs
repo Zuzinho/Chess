@@ -23,7 +23,6 @@
                 }
             }
         }
-
         protected override void setCTB()
         {//Elephant can beat the same coordinates as coordinates it can move along
             coordinatesToBeat.Clear();

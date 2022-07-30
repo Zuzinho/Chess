@@ -6,6 +6,7 @@
         private bool _turn;
         private bool _isOver;
         private List<Move> _moves; 
+
         public Game()
         {
             _board = new();
@@ -31,11 +32,12 @@
                 }
             }
             End:
-            _end(_isOver);
+            _end();
         }
-        private void _end(bool isOver)
+
+        private void _end()
         {
-            if (!isOver)
+            if (!_isOver)
             {
                 PrintClass.Print("Game was interrupted", pause: 500);
             }
